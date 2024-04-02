@@ -1,2 +1,3 @@
 # JudgeServer-1v
 用go和c实现的一个JudgeServer
+需要在linux环境下运行，/app目录下建议用docker启动并挂载到对应的/app目录下面
