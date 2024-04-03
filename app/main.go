@@ -15,6 +15,8 @@ import (
 	//#include "/app/NormalTest/main.h"
 	//#include "/app/SpecialTest/main.h"
 	//#include "/app/InteractiveTest/main.h"
+	// #cgo LDFLAGS: -lseccomp
+	// #cgo pkg-config: libseccomp
 	"C"
 )
 

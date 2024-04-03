@@ -95,7 +95,7 @@ func ProblemTest(ctx *gin.Context) {
 }
 
 func test(ctx *gin.Context) {
-	ctx.String(http.StatusOK, "hello world")
+	ctx.String(http.StatusOK, "01星球小组")
 }
 
 func main() {
