@@ -153,6 +153,7 @@ func runNormal(bucket *oss.Bucket, msg message) {
 			wg.Wait()
 			for j := i; j <= msg.SubtestNum && j < i+groupSize; j++ {
 				redisClient.Set(msg.SubmitId, isAc[j], time.Second*10)
+				redisClient.Set(msg.SubmitId+"num", j, time.Second*10)
 				if isAc[j] != 0 {
 					fmt.Println("Wrong Answer")
 					return
@@ -172,6 +173,7 @@ func runNormal(bucket *oss.Bucket, msg message) {
 				(*C.int)(unsafe.Pointer(&costMemory)),
 			)
 			redisClient.Set(msg.SubmitId, res, time.Second*10)
+			redisClient.Set(msg.SubmitId+"num", i, time.Second*10)
 			if res != 0 {
 				fmt.Println("Wrong Answer")
 				return
@@ -262,6 +264,7 @@ func runSpecial(bucket *oss.Bucket, msg message) {
 			wg.Wait()
 			for j := i; j <= msg.SubtestNum && j < i+groupSize; j++ {
 				redisClient.Set(msg.SubmitId, isAc[j], time.Second*10)
+				redisClient.Set(msg.SubmitId+"num", j, time.Second*10)
 				if isAc[j] != 0 {
 					fmt.Println("Wrong Answer")
 					return
@@ -281,6 +284,7 @@ func runSpecial(bucket *oss.Bucket, msg message) {
 				(*C.int)(unsafe.Pointer(&costMemory)),
 			)
 			redisClient.Set(msg.SubmitId, res, time.Second*10)
+			redisClient.Set(msg.SubmitId+"num", i, time.Second*10)
 			if res != 0 {
 				fmt.Println("Wrong Answer")
 				return
@@ -358,6 +362,7 @@ func runInteractive(bucket *oss.Bucket, msg message) {
 			wg.Wait()
 			for j := i; j <= msg.SubtestNum && j < i+groupSize; j++ {
 				redisClient.Set(msg.SubmitId, isAc[j], time.Second*10)
+				redisClient.Set(msg.SubmitId+"num", j, time.Second*10)
 				if isAc[j] != 0 {
 					fmt.Println("Wrong Answer")
 					return
@@ -377,6 +382,7 @@ func runInteractive(bucket *oss.Bucket, msg message) {
 				(*C.int)(unsafe.Pointer(&costMemory)),
 			)
 			redisClient.Set(msg.SubmitId, res, time.Second*10)
+			redisClient.Set(msg.SubmitId+"num", i, time.Second*10)
 			if res != 0 {
 				fmt.Println("Wrong Answer")
 				return
