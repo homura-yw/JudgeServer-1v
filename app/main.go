@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/rpc"
+	"os/exec"
 	"time"
 
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
@@ -116,5 +118,23 @@ func main() {
 		// 	runInteractive(bucket, message(msg))
 		// }
 		run(bucket, message(msg))
+
+		path := ShiftPath(msg.ProblemType)
+		inputPath := fmt.Sprintf("/app/%s/*input*", path)
+		answerPath := fmt.Sprintf("/app/%s/*answer*", path)
+		outputPath := fmt.Sprintf("/app/%s/*output*", path)
+		judgePath := fmt.Sprintf("/app/%s/*judge*", path)
+		userPath := fmt.Sprintf("/app/%s/*user*", path)
+		cmd := exec.Command(
+			"sh",
+			"-c",
+			fmt.Sprintf("rm -rf %s %s %s %s %s", inputPath, answerPath, outputPath, judgePath, userPath),
+		)
+		cmdOutput, err := cmd.CombinedOutput()
+		if err != nil {
+			fmt.Printf("命令执行出错: %s\n", err)
+			return
+		}
+		log.Println(string(cmdOutput))
 	}
 }

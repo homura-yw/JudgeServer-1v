@@ -24,7 +24,9 @@ func ShiftPath(ProblemType int) string {
 func CompileCpp(bucket *oss.Bucket, msg *message, redisClient *redis.Client) bool {
 	path := ShiftPath(msg.ProblemType)
 	err := bucket.GetObjectToFile(msg.CodeUrl, "/app/"+path+"/user.cpp")
+	log.Println("start Compile")
 	if err != nil {
+		log.Println("user load error!!!")
 		return true
 	}
 	cmd := exec.Command(
@@ -48,6 +50,7 @@ func CompileCpp(bucket *oss.Bucket, msg *message, redisClient *redis.Client) boo
 			judgePath := fmt.Sprintf("/app/%s/judge%d.cpp", path, i)
 			err = bucket.GetObjectToFile(judgeUrl, judgePath)
 			if err != nil {
+				log.Println("judge load error!")
 				return
 			}
 			if msg.ProblemType == 1 || msg.ProblemType == 2 {
@@ -55,6 +58,7 @@ func CompileCpp(bucket *oss.Bucket, msg *message, redisClient *redis.Client) boo
 				answerPath := fmt.Sprintf("/app/%s/answer%d", path, i)
 				err = bucket.GetObjectToFile(answerUrl, answerPath)
 				if err != nil {
+					log.Println("answer load error!")
 					return
 				}
 
@@ -62,6 +66,7 @@ func CompileCpp(bucket *oss.Bucket, msg *message, redisClient *redis.Client) boo
 				inputPath := fmt.Sprintf("/app/%s/input%d", path, i)
 				err = bucket.GetObjectToFile(inputUrl, inputPath)
 				if err != nil {
+					log.Println("input load error!")
 					return
 				}
 			}
@@ -77,5 +82,6 @@ func CompileCpp(bucket *oss.Bucket, msg *message, redisClient *redis.Client) boo
 		}(i)
 	}
 	loadGroup.Wait()
+	log.Println("complete compile!!!")
 	return false
 }

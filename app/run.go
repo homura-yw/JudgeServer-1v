@@ -168,8 +168,8 @@ func RunELF(redisClient *redis.Client, msg message) {
 				return
 			}
 			outputMsg := string(output)
-			fmt.Println(outputMsg)
 			fmt.Sscanf(outputMsg, "%d %d %d", &res, &costTime, &costMemory)
+			log.Printf("result:%v, cost_time:%v, cost_memory:%v\n", res, costTime, costMemory)
 			redisClient.Set(msg.SubmitId, res, time.Second*10)
 			redisClient.Set(msg.SubmitId+"num", i, time.Second*10)
 			if res != 0 {
