@@ -128,14 +128,8 @@ void run_user3() {
 
 int InteractiveTest(int time, int memory, int offset, int *res, int *costTime, int *costMemory) {
     // 创建管道文件
-    char rm_pipe_u2j[50];
-    char rm_pipe_j2u[50];
     sprintf(pipe_j2u, "/app/InteractiveTest/j2u%d.fifo", offset);
     sprintf(pipe_u2j, "/app/InteractiveTest/u2j%d.fifo", offset);
-    sprintf(rm_pipe_j2u, "rm /app/InteractiveTest/j2u%d.fifo", offset);
-    sprintf(rm_pipe_u2j, "rm /app/InteractiveTest/u2j%d.fifo", offset);
-    system(rm_pipe_j2u);
-    system(rm_pipe_u2j);
     mkfifo(pipe_j2u, 0644);
     mkfifo(pipe_u2j, 0644);
 
@@ -233,5 +227,11 @@ int InteractiveTest(int time, int memory, int offset, int *res, int *costTime, i
         printf("Runtime error\n");
         *res = WRONG_ANSWER;
     }
+    char rm_pipe_u2j[50];
+    char rm_pipe_j2u[50];
+    sprintf(rm_pipe_j2u, "rm /app/InteractiveTest/j2u%d.fifo", offset);
+    sprintf(rm_pipe_u2j, "rm /app/InteractiveTest/u2j%d.fifo", offset);
+    system(rm_pipe_j2u);
+    system(rm_pipe_u2j);
     return *res;
 }

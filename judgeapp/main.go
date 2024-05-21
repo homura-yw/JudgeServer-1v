@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -46,12 +45,14 @@ type MessageQueue struct {
 
 func (mq *MessageQueue) Push(msg message) error {
 	mq.ch <- msg
+	log.Println("push successfully!!")
 	return nil
 }
 
 func (mq *MessageQueue) Get(args *MessageQueueArgs, reply *MessageQueueReply) error {
 	msg := <-mq.ch
 	*reply = MessageQueueReply(msg)
+	log.Println("load successfully!!")
 	return nil
 }
 
@@ -63,22 +64,27 @@ func ProblemTest(ctx *gin.Context) {
 	subtestNum, err := strconv.Atoi(ctx.PostForm("subtestNum"))
 	if err != nil {
 		ctx.String(500, "Requst Failed:", err)
+		return
 	}
 	memoryLimit, err := strconv.Atoi(ctx.PostForm("memoryLimit"))
 	if err != nil {
 		ctx.String(500, "Requst Failed:", err)
+		return
 	}
 	timeLimit, err := strconv.Atoi(ctx.PostForm("timeLimit"))
 	if err != nil {
 		ctx.String(500, "Requst Failed:", err)
+		return
 	}
 	isContest, err := strconv.Atoi(ctx.PostForm("isContest"))
 	if err != nil {
 		ctx.String(500, "Requst Failed:", err)
+		return
 	}
 	problemType, err := strconv.Atoi(ctx.PostForm("problemType"))
 	if err != nil {
 		ctx.String(500, "Requst Failed:", err)
+		return
 	}
 	msg := message{
 		SubmitId:    ctx.PostForm("submitId"),
@@ -95,7 +101,7 @@ func ProblemTest(ctx *gin.Context) {
 }
 
 func test(ctx *gin.Context) {
-	ctx.String(http.StatusOK, "01星球小组")
+	ctx.String(http.StatusOK, "四个人做西电计网实验终于做出来了！！！")
 }
 
 func main() {
@@ -115,7 +121,7 @@ func main() {
 	}()
 
 	gin.SetMode(gin.ReleaseMode)
-	fmt.Println("hello world")
+	log.Println("hello world")
 	router := gin.Default()
 	router.POST("/send", ProblemTest)
 	router.GET("/hello", test)
