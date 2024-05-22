@@ -37,7 +37,10 @@ type MessageQueueReply struct {
 }
 
 // channel的最大容量
-const MAXN = 10000
+const (
+	MAXN       = 10000
+	configPath = "conf.yaml"
+)
 
 type MessageQueue struct {
 	ch chan message
@@ -101,13 +104,13 @@ func ProblemTest(ctx *gin.Context) {
 }
 
 func test(ctx *gin.Context) {
-	ctx.String(http.StatusOK, "四个人做西电计网实验终于做出来了！！！")
+	ctx.String(http.StatusOK, "hello world")
 }
 
 func main() {
 	go func() {
 		rpc.Register(&MQ)
-		listener, err := net.Listen("tcp", ":303")
+		listener, err := net.Listen("tcp", ":"+config.RpcPort)
 		if err != nil {
 			log.Panic("listen error:", err)
 		}
@@ -121,9 +124,9 @@ func main() {
 	}()
 
 	gin.SetMode(gin.ReleaseMode)
-	log.Println("hello world")
+	log.Println("service start")
 	router := gin.Default()
 	router.POST("/send", ProblemTest)
 	router.GET("/hello", test)
-	router.Run("0.0.0.0:8080")
+	router.Run(config.ServiceUrl)
 }

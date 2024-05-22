@@ -1,0 +1,10 @@
+OSS:
+  endpoint: secret
+  accessKeyID: secret
+  accessKeySecret: secret
+  bucketName: secret
+rpcUrl: localhost:303
+redis: 
+  url: secret
+  password: secret
+groupSize: 3

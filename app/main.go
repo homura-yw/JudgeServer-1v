@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
+	loadutil "judgeserver/loadUtil"
 	"log"
 	"net/rpc"
 	"os/exec"
 	"time"
 
-	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 	"github.com/go-redis/redis"
 )
 
@@ -37,37 +37,26 @@ type message struct {
 	ProblemType int
 }
 
-func GetOssClient(endpoint, ak, sk string) (client *oss.Client, err error) {
-	client, err = oss.New(endpoint, ak, sk)
-	return
-}
-
 const (
-	endpoint        = "oss-cn-beijing.aliyuncs.com"
-	accessKeyID     = "secret"
-	accessKeySecret = "secret"
-	bucketName      = "secret"
-	rpcUrl          = "secret"
-	compileError    = 4
-	groupSize       = 3
-	redisUrl        = "secret"
-	redisPassword   = "secret"
+	compileError = 4
+	configPath   = "/app/conf.yaml"
+	groupSize    = 3
 )
 
 func newClient() *redis.Client {
 	client := redis.NewClient(&redis.Options{
-		Addr:     redisUrl,
-		Password: redisPassword,
+		Addr:     config.Redis.Url,
+		Password: config.Redis.Password,
 		DB:       0,
 	})
 	return client
 }
 
-func run(bucket *oss.Bucket, msg message) {
+func run(connection loadutil.Loadutil, msg message) {
 	redisClient := newClient()
 	defer redisClient.Close()
 
-	if CompileCpp(bucket, &msg, redisClient) {
+	if CompileCpp(connection, &msg, redisClient) {
 		return
 	}
 
@@ -75,21 +64,13 @@ func run(bucket *oss.Bucket, msg message) {
 }
 
 func main() {
-	client, err := rpc.Dial("tcp", rpcUrl)
+	client, err := rpc.Dial("tcp", config.RpcUrl)
 	if err != nil {
 		log.Panic("dialing error:", err)
 	}
-	ossClient, err := GetOssClient(
-		endpoint,
-		accessKeyID,
-		accessKeySecret,
-	)
+	connection, err := loadutil.LoadutilFactory(config)
 	if err != nil {
-		log.Panic("OSS Connect error:", err)
-	}
-	bucket, err := ossClient.Bucket(bucketName)
-	if err != nil {
-		log.Panic("URL Connect error", err)
+		log.Panic("Connect error!!")
 	}
 	for {
 		args := MessageQueueArgs{}
@@ -110,14 +91,7 @@ func main() {
 			msg.ProblemType,
 			time.Now(),
 		)
-		// if msg.ProblemType == 1 {
-		// 	runNormal(bucket, message(msg))
-		// } else if msg.ProblemType == 2 {
-		// 	runSpecial(bucket, message(msg))
-		// } else {
-		// 	runInteractive(bucket, message(msg))
-		// }
-		run(bucket, message(msg))
+		run(connection, message(msg))
 
 		path := ShiftPath(msg.ProblemType)
 		inputPath := fmt.Sprintf("/app/%s/*input*", path)

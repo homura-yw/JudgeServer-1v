@@ -21,6 +21,24 @@ import (
 	"strconv"
 )
 
+func checkResult(result int) {
+	if result == 0 {
+		log.Println("Accept")
+	} else if result == 1 {
+		log.Println("Wrong Answer")
+	} else if result == 2 {
+		log.Println("Time Limit Exceed")
+	} else if result == 3 {
+		log.Println("Memory Limit Exceed")
+	} else if result == 4 {
+		log.Println("Complie Error")
+	} else if result == 5 {
+		log.Println("Runtime Error")
+	} else {
+		log.Panic("JudgeServer Error")
+	}
+}
+
 func RunCGO(redisClient *redis.Client, msg message) {
 	if msg.IsContest == 0 {
 		isAc := make([]int, msg.SubtestNum+1)
@@ -67,12 +85,12 @@ func RunCGO(redisClient *redis.Client, msg message) {
 				redisClient.Set(msg.SubmitId, isAc[j], time.Second*10)
 				redisClient.Set(msg.SubmitId+"num", j, time.Second*10)
 				if isAc[j] != 0 {
-					log.Println("Wrong Answer")
+					checkResult(isAc[j])
 					return
 				}
 			}
 		}
-		log.Println("Accept")
+		checkResult(0)
 	} else {
 		for i := 1; i <= msg.SubtestNum; i++ {
 			res, costTime, costMemory := 0, 0, 0
@@ -107,11 +125,11 @@ func RunCGO(redisClient *redis.Client, msg message) {
 			redisClient.Set(msg.SubmitId, res, time.Second*10)
 			redisClient.Set(msg.SubmitId+"num", i, time.Second*10)
 			if res != 0 {
-				log.Println("Wrong Answer")
+				checkResult(res)
 				return
 			}
 		}
-		log.Println("Accept")
+		checkResult(0)
 	}
 }
 
@@ -134,6 +152,7 @@ func RunELF(redisClient *redis.Client, msg message) {
 					)
 					output, err := cmd.CombinedOutput()
 					if err != nil {
+						log.Panic(err)
 						return
 					}
 					outputMsg := string(output)
@@ -148,12 +167,12 @@ func RunELF(redisClient *redis.Client, msg message) {
 				redisClient.Set(msg.SubmitId, isAc[j], time.Second*10)
 				redisClient.Set(msg.SubmitId+"num", j, time.Second*10)
 				if isAc[j] != 0 {
-					log.Println("Wrong Answer")
+					checkResult(isAc[j])
 					return
 				}
 			}
 		}
-		log.Println("Accept")
+		checkResult(0)
 	} else {
 		for i := 1; i <= msg.SubtestNum; i++ {
 			res, costTime, costMemory := 0, 0, 0
@@ -173,10 +192,10 @@ func RunELF(redisClient *redis.Client, msg message) {
 			redisClient.Set(msg.SubmitId, res, time.Second*10)
 			redisClient.Set(msg.SubmitId+"num", i, time.Second*10)
 			if res != 0 {
-				log.Println("Wrong Answer")
+				checkResult(res)
 				return
 			}
 		}
-		log.Println("Accept")
+		checkResult(0)
 	}
 }

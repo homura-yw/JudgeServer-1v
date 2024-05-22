@@ -1,0 +1,2 @@
+rpc_port: 303
+service_url: 0.0.0.0:8080

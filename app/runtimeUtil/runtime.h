@@ -39,7 +39,9 @@ unsigned int get_proc_mem(unsigned int pid){
     
     while (1) {                                                                
         /* 对文件内容进行逐行搜索 */
-        assert(fgets(tbuff, sizeof(tbuff), fd) != NULL);                       
+        if(fgets(tbuff, sizeof(tbuff), fd) == NULL) {
+            return -1;
+        }                       
         /* 文件读取出错 */
         valid = strstr(tbuff, "VmPeak");                                        
         /* 在该行内容中搜索关键词 */

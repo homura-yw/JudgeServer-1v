@@ -30,7 +30,7 @@ int main(int args, char **argc){
     int pid_u = fork();
     if(pid_u < 0) {
         printf("-1 0 0\n");
-        return 1;
+        return 0;
     } else if(pid_u == 0) {
         runUser(offset);
         return 0;
@@ -51,7 +51,7 @@ int main(int args, char **argc){
             costTime = time;
 
 			printf("%d %d %d\n", res, costTime, costMemory);
-			return res;
+			return 0;
 		}
 		if(costMemory > memory) {
 			kill(pid_u, SIGKILL);
@@ -60,7 +60,7 @@ int main(int args, char **argc){
             res = MLE;
 			
             printf("%d %d %d\n", res, costTime, costMemory);
-			return MLE;
+			return 0;
 		}
 		usleep(40000);
 		tottime += 4;
@@ -69,7 +69,7 @@ int main(int args, char **argc){
     int pid_j = fork();
     if(pid_j < 0){
         printf("-1 0 0\n");
-        return 1;
+        return 0;
     }else if(pid_j == 0) {
         runJudge(offset);
         return 0;
