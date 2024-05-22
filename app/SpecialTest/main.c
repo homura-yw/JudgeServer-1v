@@ -15,12 +15,12 @@ void runUser(int offset) {
     execl(user_code, user_code, NULL);
 }
 
-void runJudge(int offset) {
+void runJudge(char* offset) {
     char judge_code[50];
     
-    sprintf(judge_code, "/app/SpecialTest/judge%d", offset);
+    sprintf(judge_code, "/app/SpecialTest/judge");
     
-    execl(judge_code, judge_code, NULL);
+    execl(judge_code, judge_code, offset, NULL);
 }
 
 
@@ -71,7 +71,7 @@ int main(int args, char **argc){
         printf("-1 0 0\n");
         return 0;
     }else if(pid_j == 0) {
-        runJudge(offset);
+        runJudge(argc[1]);
         return 0;
     }
 

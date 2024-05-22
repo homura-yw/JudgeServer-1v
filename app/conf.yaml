@@ -1,10 +1,17 @@
+source: local
+
 OSS:
-  endpoint: secret
-  accessKeyID: secret
-  accessKeySecret: secret
-  bucketName: secret
+  endpoint: scret
+  accessKeyID: scret
+  accessKeySecret: scret
+  bucketName: scret
+
+datapath: scret
+
 rpcUrl: localhost:303
+
 redis: 
-  url: secret
-  password: secret
+  url: scret
+  password: scret
+
 groupSize: 3

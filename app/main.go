@@ -41,6 +41,9 @@ const (
 	compileError = 4
 	configPath   = "/app/conf.yaml"
 	groupSize    = 3
+	NORMAL       = 1
+	SPECIAL      = 2
+	INTERACTIVE  = 3
 )
 
 func newClient() *redis.Client {

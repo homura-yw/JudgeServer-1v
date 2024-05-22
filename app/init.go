@@ -12,6 +12,7 @@ import (
 var config loadutil.Config
 
 func init() {
+	log.Println("service start")
 	file, err := os.Open(configPath)
 	if err != nil {
 		log.Fatal(err)
@@ -22,4 +23,5 @@ func init() {
 		log.Fatal(err)
 	}
 	yaml.Unmarshal(yamlFile, &config)
+	log.Printf("load success, source:%s", config.Source)
 }

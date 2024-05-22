@@ -42,20 +42,33 @@ func CompileCpp(connection loadutil.Loadutil, msg *message, redisClient *redis.C
 		redisClient.Set(msg.SubmitId, compileError, time.Second*10)
 		return true
 	}
+	if msg.ProblemType == 1 || msg.ProblemType == 2 {
+		judgeUrl := fmt.Sprintf("%s/judge.cpp", msg.TestUrl)
+		judgePath := fmt.Sprintf("/app/%s/judge.cpp", path)
+		judgeExec := fmt.Sprintf("/app/%s/judge", path)
+
+		err = connection.LoadToFile(judgeUrl, judgePath)
+		if err != nil {
+			log.Println("judge load error!")
+			return true
+		}
+		cmd := exec.Command(
+			"g++",
+			"-o",
+			judgeExec,
+			judgePath,
+		)
+		cmd.CombinedOutput()
+	}
+
 	var loadGroup sync.WaitGroup
 	for i := 1; i <= msg.SubtestNum; i++ {
 		loadGroup.Add(1)
 		go func(i int) {
-			judgeUrl := fmt.Sprintf("%s/%d/judge.cpp", msg.TestUrl, i)
-			judgePath := fmt.Sprintf("/app/%s/judge%d.cpp", path, i)
-			err = connection.LoadToFile(judgeUrl, judgePath)
-			if err != nil {
-				log.Println("judge load error!")
-				return
-			}
-			if msg.ProblemType == 1 || msg.ProblemType == 2 {
+			if msg.ProblemType == NORMAL || msg.ProblemType == SPECIAL {
 				answerUrl := fmt.Sprintf("%s/%d/answer", msg.TestUrl, i)
 				answerPath := fmt.Sprintf("/app/%s/answer%d", path, i)
+
 				err = connection.LoadToFile(answerUrl, answerPath)
 				if err != nil {
 					log.Println("answer load error!")
@@ -64,20 +77,31 @@ func CompileCpp(connection loadutil.Loadutil, msg *message, redisClient *redis.C
 
 				inputUrl := fmt.Sprintf("%s/%d/input", msg.TestUrl, i)
 				inputPath := fmt.Sprintf("/app/%s/input%d", path, i)
+
 				err = connection.LoadToFile(inputUrl, inputPath)
 				if err != nil {
 					log.Println("input load error!")
 					return
 				}
 			}
-			judgeExec := fmt.Sprintf("/app/%s/judge%d", path, i)
-			cmd := exec.Command(
-				"g++",
-				"-o",
-				judgeExec,
-				judgePath,
-			)
-			cmd.CombinedOutput()
+			if msg.ProblemType == INTERACTIVE {
+				judgeUrl := fmt.Sprintf("%s/%d/judge.cpp", msg.TestUrl, i)
+				judgePath := fmt.Sprintf("/app/%s/judge%d.cpp", path, i)
+				judgeExec := fmt.Sprintf("/app/%s/judge%d", path, i)
+
+				err = connection.LoadToFile(judgeUrl, judgePath)
+				if err != nil {
+					log.Println("judge load error!")
+					return
+				}
+				cmd := exec.Command(
+					"g++",
+					"-o",
+					judgeExec,
+					judgePath,
+				)
+				cmd.CombinedOutput()
+			}
 			loadGroup.Done()
 		}(i)
 	}

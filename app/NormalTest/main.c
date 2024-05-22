@@ -15,12 +15,12 @@ void runUser(int offset) {
     execl(user_code, user_code, NULL);
 }
 
-void runJudge(int offset) {
+void runJudge(char* offset) {
     char judge_code[50];
     
-    sprintf(judge_code, "/app/NormalTest/judge%d", offset);
+    sprintf(judge_code, "/app/NormalTest/judge");
     
-    execl(judge_code, judge_code, NULL);
+    execl(judge_code, judge_code, offset, NULL);
 }
 
 
@@ -71,12 +71,11 @@ int main(int args, char **argc){
         printf("-1 0 0\n");
         return 0;
     }else if(pid_j == 0) {
-        runJudge(offset);
+        runJudge(argc[1]);
         return 0;
     }
 
     waitpid(pid_j, &stat_j, 0);
-	
     if (WIFEXITED(stat_u) || (WIFSIGNALED(stat_u) && WTERMSIG(stat_u) == SIGPIPE)) {
         // 用户程序正常退出，或由于 SIGPIPE 退出，需要裁判程序判定
         if (WIFEXITED(stat_j)) {
