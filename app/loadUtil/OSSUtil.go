@@ -9,6 +9,13 @@ type OSSUtil struct {
 }
 
 func (ou *OSSUtil) LoadToFile(url, path string) error {
+
+	bts := []byte(url)
+	if bts[0] == '/' {
+		bts = bts[1:]
+		url = string(bts)
+	}
+
 	err := ou.bucket.GetObjectToFile(url, path)
 	return err
 }

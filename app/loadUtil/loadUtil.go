@@ -13,6 +13,7 @@ type Config struct {
 	} `yaml:"redis"`
 	RpcUrl    string `yaml:"rpcUrl"`
 	GroupSize int    `yaml:"groupSize"`
+	LocalPath string `yaml:"datapath"`
 }
 
 func LoadutilFactory(config Config) (Loadutil, error) {
