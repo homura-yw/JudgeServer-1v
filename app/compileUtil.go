@@ -42,7 +42,7 @@ func CompileCpp(connection loadutil.Loadutil, msg *message, redisClient *redis.C
 		redisClient.Set(msg.SubmitId, compileError, time.Second*10)
 		return true
 	}
-	if msg.ProblemType == 1 || msg.ProblemType == 2 {
+	if msg.ProblemType == NORMAL || msg.ProblemType == SPECIAL {
 		judgeUrl := fmt.Sprintf("%s/judge.cpp", msg.TestUrl)
 		judgePath := fmt.Sprintf("/app/%s/judge.cpp", path)
 		judgeExec := fmt.Sprintf("/app/%s/judge", path)

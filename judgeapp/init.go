@@ -11,6 +11,7 @@ import (
 type Config struct {
 	ServiceUrl string `yaml:"service_url"`
 	RpcPort    string `yaml:"rpc_port"`
+	BufferSize int    `yaml:"buffer_size"`
 }
 
 var config Config

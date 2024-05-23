@@ -43,13 +43,32 @@ const (
 )
 
 type MessageQueue struct {
-	ch chan message
+	ch      chan message
+	results chan string
 }
 
 func (mq *MessageQueue) Push(msg message) error {
 	mq.ch <- msg
 	log.Println("push successfully!!")
 	return nil
+}
+
+func (mq *MessageQueue) GetResults() []string {
+	results := make([]string, 0)
+	for i := 1; i <= config.BufferSize; i++ {
+		IsEnd := false
+		select {
+		case msg := <-mq.results:
+			results = append(results, msg)
+		default:
+			IsEnd = true
+		}
+		if IsEnd {
+			break
+		}
+	}
+	log.Printf("load %d messages\n", len(results))
+	return results
 }
 
 func (mq *MessageQueue) Get(args *MessageQueueArgs, reply *MessageQueueReply) error {
@@ -59,8 +78,16 @@ func (mq *MessageQueue) Get(args *MessageQueueArgs, reply *MessageQueueReply) er
 	return nil
 }
 
+func (mq *MessageQueue) PushResult(args *string, reply *string) error {
+	*reply = "server get result successfully"
+	mq.results <- *args
+	log.Println("get result successfully")
+	return nil
+}
+
 var MQ MessageQueue = MessageQueue{
-	ch: make(chan message, MAXN),
+	ch:      make(chan message, MAXN),
+	results: make(chan string, MAXN),
 }
 
 func ProblemTest(ctx *gin.Context) {
@@ -103,6 +130,11 @@ func ProblemTest(ctx *gin.Context) {
 	ctx.String(http.StatusOK, "ok")
 }
 
+func getCompleteSubmission(ctx *gin.Context) {
+	results := MQ.GetResults()
+	ctx.JSON(http.StatusOK, results)
+}
+
 func test(ctx *gin.Context) {
 	ctx.String(http.StatusOK, "hello world")
 }
@@ -125,8 +157,10 @@ func main() {
 
 	gin.SetMode(gin.ReleaseMode)
 	log.Println("service start")
+
 	router := gin.Default()
 	router.POST("/send", ProblemTest)
 	router.GET("/hello", test)
+	router.GET("/pull", getCompleteSubmission)
 	router.Run(config.ServiceUrl)
 }

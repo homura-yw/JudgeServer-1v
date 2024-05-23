@@ -80,7 +80,7 @@ func main() {
 		msg := MessageQueueReply{}
 		err = client.Call("MessageQueue.Get", &args, &msg)
 		if err != nil {
-			log.Panic("Call error:", err)
+			log.Fatal("Call error:", err)
 		}
 		log.Printf(
 			"submid_id:%v\ntest_url:%v\ncode_url:%v\nsubtest_num:%v\nmemory_limit:%v\ntime_limit:%v\nis_contest:%v\nproblem_type:%v\ndate:%v\n",
@@ -95,6 +95,14 @@ func main() {
 			time.Now(),
 		)
 		run(connection, message(msg))
+
+		submitId := msg.SubmitId
+		logs := ""
+		err = client.Call("MessageQueue.PushResult", &submitId, &logs)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println(logs)
 
 		path := ShiftPath(msg.ProblemType)
 		inputPath := fmt.Sprintf("/app/%s/*input*", path)
