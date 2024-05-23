@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis"
 )
 
 type message struct {
@@ -22,7 +23,9 @@ type message struct {
 }
 
 // 用于RPC调用的空结构体
-type MessageQueueArgs struct{}
+type MessageQueueArgs struct {
+	Key string
+}
 
 // RPC调用的响应类型，需要导出字段
 type MessageQueueReply struct {
@@ -74,6 +77,23 @@ func (mq *MessageQueue) GetResults() []string {
 func (mq *MessageQueue) Get(args *MessageQueueArgs, reply *MessageQueueReply) error {
 	msg := <-mq.ch
 	*reply = MessageQueueReply(msg)
+	val, err := redisClint.Get(args.Key).Result()
+	if err != nil {
+		if err == redis.Nil {
+			log.Println("service redirect", err)
+			mq.ch <- msg
+			return nil
+		} else {
+			log.Panic("redis connect shutdown", val)
+		}
+	} else {
+		num, err := strconv.Atoi(val)
+		if err != nil {
+			log.Panic("service error")
+		}
+		val = strconv.Itoa(num + 1)
+		redisClint.Set(args.Key, val, 0)
+	}
 	log.Println("load successfully!!")
 	return nil
 }
@@ -159,8 +179,10 @@ func main() {
 	log.Println("service start")
 
 	router := gin.Default()
+
 	router.POST("/send", ProblemTest)
 	router.GET("/hello", test)
 	router.GET("/pull", getCompleteSubmission)
+
 	router.Run(config.ServiceUrl)
 }

@@ -1,3 +1,8 @@
 rpc_port: 303
 service_url: 0.0.0.0:8080
 buffer_size: 20
+
+redis: 
+  url: secret
+  password: secret
+  db: 0

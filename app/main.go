@@ -1,18 +1,19 @@
 package main
 
 import (
-	"fmt"
 	loadutil "judgeserver/loadUtil"
 	"log"
 	"net/rpc"
-	"os/exec"
 	"time"
 
 	"github.com/go-redis/redis"
+	"github.com/google/uuid"
 )
 
 // 用于RPC调用的空结构体
-type MessageQueueArgs struct{}
+type MessageQueueArgs struct {
+	Key string
+}
 
 // RPC调用的响应类型，需要导出字段
 type MessageQueueReply struct {
@@ -50,15 +51,12 @@ func newClient() *redis.Client {
 	client := redis.NewClient(&redis.Options{
 		Addr:     config.Redis.Url,
 		Password: config.Redis.Password,
-		DB:       0,
+		DB:       config.Redis.Db,
 	})
 	return client
 }
 
-func run(connection loadutil.Loadutil, msg message) {
-	redisClient := newClient()
-	defer redisClient.Close()
-
+func run(connection loadutil.Loadutil, msg message, redisClient *redis.Client) {
 	if CompileCpp(connection, &msg, redisClient) {
 		return
 	}
@@ -66,21 +64,32 @@ func run(connection loadutil.Loadutil, msg message) {
 	RunELF(redisClient, msg)
 }
 
+var UUID string
+
 func main() {
+	redisClient := newClient()
+	UUID = uuid.New().String()
+	defer func() {
+		redisClient.Del(UUID)
+	}()
 	client, err := rpc.Dial("tcp", config.RpcUrl)
 	if err != nil {
 		log.Panic("dialing error:", err)
 	}
+	go register(UUID)
 	connection, err := loadutil.LoadutilFactory(config)
 	if err != nil {
 		log.Panic("Connect error!!")
 	}
+
 	for {
-		args := MessageQueueArgs{}
+		args := MessageQueueArgs{
+			Key: UUID,
+		}
 		msg := MessageQueueReply{}
 		err = client.Call("MessageQueue.Get", &args, &msg)
 		if err != nil {
-			log.Fatal("Call error:", err)
+			log.Panic("Call error 1:", err)
 		}
 		log.Printf(
 			"submid_id:%v\ntest_url:%v\ncode_url:%v\nsubtest_num:%v\nmemory_limit:%v\ntime_limit:%v\nis_contest:%v\nproblem_type:%v\ndate:%v\n",
@@ -94,32 +103,15 @@ func main() {
 			msg.ProblemType,
 			time.Now(),
 		)
-		run(connection, message(msg))
+		run(connection, message(msg), redisClient)
 
 		submitId := msg.SubmitId
 		logs := ""
 		err = client.Call("MessageQueue.PushResult", &submitId, &logs)
 		if err != nil {
-			log.Fatal(err)
+			log.Panic("connect error2:", err)
 		}
 		log.Println(logs)
-
-		path := ShiftPath(msg.ProblemType)
-		inputPath := fmt.Sprintf("/app/%s/*input*", path)
-		answerPath := fmt.Sprintf("/app/%s/*answer*", path)
-		outputPath := fmt.Sprintf("/app/%s/*output*", path)
-		judgePath := fmt.Sprintf("/app/%s/*judge*", path)
-		userPath := fmt.Sprintf("/app/%s/*user*", path)
-		cmd := exec.Command(
-			"sh",
-			"-c",
-			fmt.Sprintf("rm -rf %s %s %s %s %s", inputPath, answerPath, outputPath, judgePath, userPath),
-		)
-		cmdOutput, err := cmd.CombinedOutput()
-		if err != nil {
-			fmt.Printf("命令执行出错: %s\n", err)
-			return
-		}
-		log.Println(string(cmdOutput))
+		clear(message(msg))
 	}
 }

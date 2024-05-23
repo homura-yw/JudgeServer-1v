@@ -13,5 +13,6 @@ rpcUrl: localhost:303
 redis: 
   url: secret
   password: secret
+  db: 0
 
 groupSize: 3

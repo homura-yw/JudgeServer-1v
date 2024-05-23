@@ -37,7 +37,7 @@ func checkResult(result int, msg message, redisClient *redis.Client) {
 		output = "Runtime Error"
 	} else {
 		output = "JudgeServer Error"
-		log.Fatal("JudgeServer Error")
+		log.Panic("JudgeServer Error")
 	}
 }
 
@@ -60,7 +60,7 @@ func RunELF(redisClient *redis.Client, msg message) {
 					)
 					output, err := cmd.CombinedOutput()
 					if err != nil {
-						log.Fatal(err)
+						log.Panic(err)
 						return
 					}
 					outputMsg := string(output)

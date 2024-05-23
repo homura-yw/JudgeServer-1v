@@ -15,12 +15,12 @@ func init() {
 	log.Println("service start")
 	file, err := os.Open(configPath)
 	if err != nil {
-		log.Fatal(err)
+		log.Panic(err)
 	}
 	defer file.Close()
 	yamlFile, err := io.ReadAll(file)
 	if err != nil {
-		log.Fatal(err)
+		log.Panic(err)
 	}
 	yaml.Unmarshal(yamlFile, &config)
 	log.Printf("load success, source:%s", config.Source)

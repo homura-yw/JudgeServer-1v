@@ -12,6 +12,7 @@ type Config struct {
 	Redis struct {
 		Url      string `yaml:"url"`
 		Password string `yaml:"password"`
+		Db       int    `yaml:"db"`
 	} `yaml:"redis"`
 	RpcUrl    string `yaml:"rpcUrl"`
 	GroupSize int    `yaml:"groupSize"`
